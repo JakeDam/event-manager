@@ -44,9 +44,36 @@ def save_thank_you_letter(id, form_letter)
 end
 
 def get_hours(date, array)
-  hours = []
   hour = DateTime.strptime(date, '%m/%d/%Y %H:%M').hour
   array << hour
+end
+
+def get_day(date, array)
+  date = DateTime.strptime(date, '%m/%d/%Y %H:%M')
+  year = date.year.to_i
+  month = date.month.to_i
+  day = date.day.to_i
+  weekday = Date.new(year, month, day).wday
+  array << weekday
+end
+
+def convert_days(day)
+  case day 
+  when 0
+    "Sunday"
+  when 1
+    "Monday"
+  when 2
+    "Tuesday"
+  when 3
+    "Wednesday"
+  when 4
+    "Thursday"
+  when 5 
+    "Friday"
+  when 6
+    "Saturday"
+  end
 end
 
 def most_common_value(a)
@@ -65,6 +92,7 @@ template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 
 hours = []
+days = []
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
@@ -72,6 +100,7 @@ contents.each do |row|
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
   get_hours(row[:regdate], hours)
+  get_day(row[:regdate], days)
 
   form_letter = erb_template.result(binding)
 
@@ -81,4 +110,5 @@ contents.each do |row|
 end
 
 puts "The most popular registration hour is #{most_common_value(hours)}"
+puts "The most popular registration day is #{convert_days(most_common_value(days))}"
 
