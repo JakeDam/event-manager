@@ -43,6 +43,15 @@ def save_thank_you_letter(id, form_letter)
   end
 end
 
+def get_hours(date, array)
+  hours = []
+  hour = DateTime.strptime(date, '%m/%d/%Y %H:%M').hour
+  array << hour
+end
+
+def most_common_value(a)
+  a.group_by(&:itself).values.max_by(&:size).first
+end
 
 puts 'EventManager initialized.'
 
@@ -55,12 +64,14 @@ contents = CSV.open(
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 
+hours = []
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
   number = clean_phone_number(row[:homephone])
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
+  get_hours(row[:regdate], hours)
 
   form_letter = erb_template.result(binding)
 
@@ -68,3 +79,6 @@ contents.each do |row|
 
   puts "#{name} #{number} #{zipcode}"
 end
+
+puts "The most popular registration hour is #{most_common_value(hours)}"
+
